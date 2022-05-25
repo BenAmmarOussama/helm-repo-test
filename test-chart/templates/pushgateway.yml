@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pushgateway
+  namespace: test
+  labels:
+    app: pushgateway
+spec:
+  replicas: {{ .Values.Pushgateway.replicaCount }}
+  selector:
+    matchLabels:
+      app: pushgateway
+  template:
+    metadata:
+      labels:
+        app: pushgateway
+    spec:
+      containers:
+      - name: pushgateway
+        image: prom/pushgateway:v1.4.2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: web
+          containerPort: 9091
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway
+  
+  labels:
+    app: pushgateway
+    monitored-by-prometheus: "true"
+spec:
+  type: NodePort
+  ports:
+  - name: web
+    nodePort: 30091
+    port: 9091
+    protocol: TCP
+    targetPort: 9091
+  selector:
+    app: pushgateway
